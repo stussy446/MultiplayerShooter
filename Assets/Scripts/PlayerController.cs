@@ -17,12 +17,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] bool invertLook;
     [SerializeField] float mouseSensitivity = 1f;
 
+    [Header("Jump Configs")]
+    [SerializeField] float jumpForce = 12f;
+    [SerializeField] float gravityModification = 2.5f;
+    [SerializeField] Transform groundCheckPoint;
+    [SerializeField] LayerMask groundLayers;
+
+
     private float verticalRotStore;
     private Vector2 mouseInput;
 
     private Vector3 moveDirection;
     private Vector3 movement;
     private float activeMoveSpeed;
+    private bool isGrounded;
 
     private CharacterController characterController;
     private Camera cam;
@@ -42,12 +50,13 @@ public class PlayerController : MonoBehaviour
 
         GetMovementInput();
         Move();
+
+        ToggleCursor();
     }
 
     private void LateUpdate()
     {
-        cam.transform.position = viewPoint.position;
-        cam.transform.rotation = viewPoint.rotation;
+        SetCamera();
     }
 
     private void GetMouseInput()
@@ -69,8 +78,30 @@ public class PlayerController : MonoBehaviour
     {
         activeMoveSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
 
+        float yVelocity = movement.y;
         movement = ((transform.forward * moveDirection.z) + (transform.right * moveDirection.x)).normalized * activeMoveSpeed;
+        movement.y = yVelocity;
+
+        if (characterController.isGrounded)
+        {
+            movement.y = 0f;
+        }
+
+        Jump();
+
         characterController.Move(movement * Time.deltaTime);
+    }
+
+    private void Jump()
+    {
+        isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.25f, groundLayers);
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            movement.y = jumpForce;
+        }
+
+        movement.y += Physics.gravity.y * Time.deltaTime * gravityModification;
     }
 
     private void RotateHorizontal()
@@ -91,5 +122,26 @@ public class PlayerController : MonoBehaviour
         {
             viewPoint.rotation = Quaternion.Euler(-verticalRotStore, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
         }
+    }
+
+    private void ToggleCursor()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if(Cursor.lockState == CursorLockMode.None)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
+    }
+
+    private void SetCamera()
+    {
+        cam.transform.position = viewPoint.position;
+        cam.transform.rotation = viewPoint.rotation;
     }
 }
