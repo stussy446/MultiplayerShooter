@@ -50,12 +50,13 @@ public class PlayerController : MonoBehaviour
 
         GetMovementInput();
         Move();
+
+        ToggleCursor();
     }
 
     private void LateUpdate()
     {
-        cam.transform.position = viewPoint.position;
-        cam.transform.rotation = viewPoint.rotation;
+        SetCamera();
     }
 
     private void GetMouseInput()
@@ -121,5 +122,26 @@ public class PlayerController : MonoBehaviour
         {
             viewPoint.rotation = Quaternion.Euler(-verticalRotStore, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
         }
+    }
+
+    private void ToggleCursor()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if(Cursor.lockState == CursorLockMode.None)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
+    }
+
+    private void SetCamera()
+    {
+        cam.transform.position = viewPoint.position;
+        cam.transform.rotation = viewPoint.rotation;
     }
 }
