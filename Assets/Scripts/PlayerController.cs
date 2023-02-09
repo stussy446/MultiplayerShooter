@@ -23,6 +23,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform groundCheckPoint;
     [SerializeField] LayerMask groundLayers;
 
+    [Header("Shooting Configs")]
+    [SerializeField] GameObject bulletImpact;
+    [SerializeField] float impactLifetime = 10f;
 
     private float verticalRotStore;
     private Vector2 mouseInput;
@@ -52,6 +55,9 @@ public class PlayerController : MonoBehaviour
         Move();
 
         ToggleCursor();
+
+        Shoot();
+
     }
 
     private void LateUpdate()
@@ -90,6 +96,8 @@ public class PlayerController : MonoBehaviour
         Jump();
 
         characterController.Move(movement * Time.deltaTime);
+
+       
     }
 
     private void Jump()
@@ -143,5 +151,21 @@ public class PlayerController : MonoBehaviour
     {
         cam.transform.position = viewPoint.position;
         cam.transform.rotation = viewPoint.rotation;
+    }
+
+    private void Shoot()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            ray.origin = cam.transform.position;
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+                Destroy(impact, impactLifetime);
+            }
+        }
     }
 }
