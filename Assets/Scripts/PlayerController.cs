@@ -52,6 +52,8 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         characterController = GetComponent<CharacterController>(); 
         cam = Camera.main;
+
+        UIController.instance.weaponTempSlider.maxValue = maxHeat;
     }
 
     private void Update()
@@ -208,6 +210,8 @@ public class PlayerController : MonoBehaviour
                 {
                     heatCounter = maxHeat;
                     overHeated = true;
+                    UIController.instance.overheatedMessage.gameObject.SetActive(true);
+
                 }
             }
         }
@@ -219,6 +223,7 @@ public class PlayerController : MonoBehaviour
         if (heatCounter <= 0)
         {
             overHeated = false;
+            UIController.instance.overheatedMessage.gameObject.SetActive(false);
         }
     }
 
@@ -228,5 +233,14 @@ public class PlayerController : MonoBehaviour
         {
             heatCounter = 0f;
         }
+
+        AlignTempSlider();
+
+    }
+
+    private void AlignTempSlider()
+    {
+        UIController.instance.weaponTempSlider.value = heatCounter;
+
     }
 }
