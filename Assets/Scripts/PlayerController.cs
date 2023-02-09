@@ -23,7 +23,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform groundCheckPoint;
     [SerializeField] LayerMask groundLayers;
 
+    [Header("Shooting Configs")]
+    [SerializeField] GameObject bulletImpact;
+    [SerializeField] float impactLifetime = 10f;
+    [SerializeField] float timeBetweenShots = 0.1f;
+    [SerializeField] float maxHeat = 10f;
+    [SerializeField] float heatPerShot = 1f;
+    [SerializeField] float coolRate = 4f;
+    [SerializeField] float overheatCoolRate = 5f;
 
+    private float heatCounter;
+    private bool overHeated;
+
+    private float shotCounter;
     private float verticalRotStore;
     private Vector2 mouseInput;
 
@@ -44,14 +56,40 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        HandleRotation();
+        HandleMovement();
+        ToggleCursor();
+
+        if (!overHeated)
+        {
+            Shoot();
+            CalculateCurrentHeat();
+        }
+        else
+        {
+           HandleOverheating();
+        }
+
+        ResetIfHeatIsNegative();
+
+    }
+
+    private void CalculateCurrentHeat()
+    {
+        heatCounter -= coolRate * Time.deltaTime;
+    }
+
+    private void HandleRotation()
+    {
         GetMouseInput();
         RotateHorizontal();
         RotateVertical();
+    }
 
+    private void HandleMovement()
+    {
         GetMovementInput();
         Move();
-
-        ToggleCursor();
     }
 
     private void LateUpdate()
@@ -90,6 +128,8 @@ public class PlayerController : MonoBehaviour
         Jump();
 
         characterController.Move(movement * Time.deltaTime);
+
+       
     }
 
     private void Jump()
@@ -143,5 +183,50 @@ public class PlayerController : MonoBehaviour
     {
         cam.transform.position = viewPoint.position;
         cam.transform.rotation = viewPoint.rotation;
+    }
+
+    private void Shoot()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            shotCounter -= Time.deltaTime;
+            if (shotCounter <= 0)
+            {
+                Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+                ray.origin = cam.transform.position;
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+                    Destroy(impact, impactLifetime);
+                }
+
+                shotCounter = timeBetweenShots;
+                heatCounter += heatPerShot;
+                if (heatCounter >= maxHeat)
+                {
+                    heatCounter = maxHeat;
+                    overHeated = true;
+                }
+            }
+        }
+    }
+
+    private void HandleOverheating()
+    {
+        heatCounter -= overheatCoolRate * Time.deltaTime;
+        if (heatCounter <= 0)
+        {
+            overHeated = false;
+        }
+    }
+
+    private void ResetIfHeatIsNegative()
+    {
+        if (heatCounter < 0)
+        {
+            heatCounter = 0f;
+        }
     }
 }
