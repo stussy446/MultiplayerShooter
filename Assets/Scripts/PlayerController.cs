@@ -56,11 +56,20 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        characterController = GetComponent<CharacterController>(); 
+        characterController = GetComponent<CharacterController>();
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
         SwitchGun();
+
+        SpawnPlayer();
+    }
+
+    private void SpawnPlayer()
+    {
+        Transform newSpawnPoint = SpawnManager.instance.GetSpawnPoint();
+        transform.position = newSpawnPoint.position;
+        transform.rotation = newSpawnPoint.rotation;
     }
 
     private void Update()
