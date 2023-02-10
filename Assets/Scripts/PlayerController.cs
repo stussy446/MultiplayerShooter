@@ -26,11 +26,13 @@ public class PlayerController : MonoBehaviour
     [Header("Shooting Configs")]
     [SerializeField] GameObject bulletImpact;
     [SerializeField] float impactLifetime = 10f;
-    [SerializeField] float timeBetweenShots = 0.1f;
+    //[SerializeField] float timeBetweenShots = 0.1f;
     [SerializeField] float maxHeat = 10f;
-    [SerializeField] float heatPerShot = 1f;
+    //[SerializeField] float heatPerShot = 1f;
     [SerializeField] float coolRate = 4f;
     [SerializeField] float overheatCoolRate = 5f;
+    [SerializeField] float muzzleDisplayTime;
+    private float muzzleCounter;
 
     [Header("Available Guns")]
     [SerializeField] Gun[] allGuns;
@@ -66,6 +68,17 @@ public class PlayerController : MonoBehaviour
         HandleRotation();
         HandleMovement();
         ToggleCursor();
+
+        if (allGuns[selectedGun].muzzleFlash.activeInHierarchy)
+        {
+            muzzleCounter -= Time.deltaTime;
+            if (muzzleCounter <= 0)
+            {
+                allGuns[selectedGun].muzzleFlash.SetActive(false);
+
+            }
+        }
+
 
         if (!overHeated)
         {
@@ -199,6 +212,9 @@ public class PlayerController : MonoBehaviour
             shotCounter -= Time.deltaTime;
             if (shotCounter <= 0)
             {
+                allGuns[selectedGun].muzzleFlash.SetActive(true);
+                muzzleCounter = muzzleDisplayTime;
+
                 Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
                 ray.origin = cam.transform.position;
                 RaycastHit hit;
@@ -209,8 +225,8 @@ public class PlayerController : MonoBehaviour
                     Destroy(impact, impactLifetime);
                 }
 
-                shotCounter = timeBetweenShots;
-                heatCounter += heatPerShot;
+                shotCounter = allGuns[selectedGun].timeBetweenShots;
+                heatCounter += allGuns[selectedGun].heatPerShot;
                 if (heatCounter >= maxHeat)
                 {
                     heatCounter = maxHeat;
