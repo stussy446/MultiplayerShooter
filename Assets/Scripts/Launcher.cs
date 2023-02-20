@@ -17,6 +17,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     [SerializeField] TMP_InputField roomNameInput;
     [SerializeField] GameObject roomScreen;
     [SerializeField] TMP_Text roomNameText;
+    [SerializeField] TMP_Text playerNameLabel;
     [SerializeField] GameObject errorScreen;
     [SerializeField] TMP_Text errorText;
 
@@ -25,6 +26,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     [SerializeField] RoomButtton roomButtton;
 
     private List<RoomButtton> allRoomButtons = new List<RoomButtton>();
+    private List<TMP_Text> allPlayerNames = new List<TMP_Text>();
 
     private void Awake()
     {
@@ -49,6 +51,8 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         CloseMenus();
         OpenMenuButtons();
+
+        PhotonNetwork.NickName = Random.Range(0, 1000).ToString();
     }
 
     private void CloseMenus()
@@ -99,7 +103,45 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomScreen.SetActive(true);
 
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+
+        ListAllPlayers();
     }
+
+    private void ListAllPlayers()
+    {
+        foreach (TMP_Text playerName in allPlayerNames)
+        {
+            Destroy(playerName.gameObject);
+        }
+        allPlayerNames.Clear();
+
+        Player[] players = PhotonNetwork.PlayerList;
+
+        for (int i = 0; i < players.Length; i++)
+        {
+            AddPlayerToRoomList(players[i]);
+        }
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        AddPlayerToRoomList(newPlayer);
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        ListAllPlayers();
+    }
+
+    private void AddPlayerToRoomList(Player player )
+    {
+        TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
+        newPlayerLabel.text = player.NickName;
+        newPlayerLabel.gameObject.SetActive(true);
+
+        allPlayerNames.Add(newPlayerLabel);
+    }
+
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
