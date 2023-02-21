@@ -130,6 +130,11 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         ListAllPlayers();
 
+        ToggleStartGameButton();
+    }
+
+    private void ToggleStartGameButton()
+    {
         if (PhotonNetwork.IsMasterClient)
         {
             startButton.SetActive(true);
@@ -269,5 +274,10 @@ public class Launcher : MonoBehaviourPunCallbacks
     public void StartGame()
     {
         PhotonNetwork.LoadLevel(LevelToPlay);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        ToggleStartGameButton();
     }
 }
