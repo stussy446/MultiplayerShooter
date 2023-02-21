@@ -21,8 +21,6 @@ public class SpawnManager : MonoBehaviour
     public Transform GetSpawnPoint()
     {
         int spawnIndex = Random.Range(0, spawnPoints.Length);
-        Debug.Log(spawnIndex);
-
         return spawnPoints[spawnIndex];
     }
 
