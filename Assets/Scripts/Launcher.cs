@@ -28,6 +28,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     [Header("Room Screen Configs")]
     [SerializeField] GameObject roomBrowserScreen;
     [SerializeField] RoomButtton roomButtton;
+    [SerializeField] GameObject testRoomButton;
 
     [Header("Name Input Screen Configs")]
     [SerializeField] GameObject nameInputScreen;
@@ -48,6 +49,9 @@ public class Launcher : MonoBehaviourPunCallbacks
         OpenLoadingMenu();
 
         PhotonNetwork.ConnectUsingSettings();
+#if UNITY_EDITOR
+        testRoomButton.SetActive(true);
+#endif
     }
 
     public override void OnConnectedToMaster()
@@ -279,5 +283,15 @@ public class Launcher : MonoBehaviourPunCallbacks
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
         ToggleStartGameButton();
+    }
+
+    public void QuickJoin()
+    {
+        RoomOptions options = new RoomOptions { MaxPlayers = 8 };
+
+        PhotonNetwork.CreateRoom("Test", options);
+        CloseMenus();
+        loadingText.text = "Creating room...";
+        loadingScreen.SetActive(true);
     }
 }
