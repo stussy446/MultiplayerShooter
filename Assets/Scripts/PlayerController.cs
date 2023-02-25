@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks
 {
     [Header("Movement Configs")]
     [SerializeField] float moveSpeed;
@@ -26,9 +27,7 @@ public class PlayerController : MonoBehaviour
     [Header("Shooting Configs")]
     [SerializeField] GameObject bulletImpact;
     [SerializeField] float impactLifetime = 10f;
-    //[SerializeField] float timeBetweenShots = 0.1f;
     [SerializeField] float maxHeat = 10f;
-    //[SerializeField] float heatPerShot = 1f;
     [SerializeField] float coolRate = 4f;
     [SerializeField] float overheatCoolRate = 5f;
     [SerializeField] float muzzleDisplayTime;
@@ -37,6 +36,10 @@ public class PlayerController : MonoBehaviour
     [Header("Available Guns")]
     [SerializeField] Gun[] allGuns;
     private int selectedGun;
+
+    [Header("VFX")]
+    [SerializeField] GameObject playerHitImpact;
+
 
     private float heatCounter;
     private bool overHeated;
@@ -61,8 +64,6 @@ public class PlayerController : MonoBehaviour
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
         SwitchGun();
-
-        SpawnPlayer();
     }
 
     private void SpawnPlayer()
@@ -74,6 +75,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!photonView.IsMine)
+        {
+            return;
+        }
+
         HandleRotation();
         HandleMovement();
         ToggleCursor();
@@ -106,7 +112,10 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        SetCamera();
+        if (photonView.IsMine)
+        {
+            SetCamera();
+        }
     }
 
     #region Movement
@@ -230,26 +239,62 @@ public class PlayerController : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
-                    Destroy(impact, impactLifetime);
+                    HandleShotImpact(hit);
                 }
 
                 shotCounter = allGuns[selectedGun].timeBetweenShots;
                 heatCounter += allGuns[selectedGun].heatPerShot;
+
                 if (heatCounter >= maxHeat)
                 {
-                    heatCounter = maxHeat;
-                    overHeated = true;
-                    UIController.instance.overheatedMessage.gameObject.SetActive(true);
-
+                    SetToMaxHeat();
                 }
             }
         }
     }
 
+    [PunRPC]
+    public void DealDamage(string damager)
+    {
+        TakeDamage(damager);
+    }
+
+    public void TakeDamage(string damager)
+    {
+        Debug.Log($"{photonView.Owner.NickName} has been hit by {damager}");
+        gameObject.SetActive(false);
+
+    }
+
+    private void HandleShotImpact(RaycastHit hit)
+    {
+        if (hit.collider.gameObject.CompareTag("Player"))
+        {
+            PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+            hit.collider.gameObject.GetPhotonView().RPC
+                (
+                "DealDamage",
+                RpcTarget.All,
+                PhotonNetwork.NickName
+                );
+        }
+        else
+        {
+            GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+            Destroy(impact, impactLifetime);
+        }
+    }
+    #region HeatLogic
     private void CalculateCurrentHeat()
     {
         heatCounter -= coolRate * Time.deltaTime;
+    }
+
+    private void SetToMaxHeat()
+    {
+        heatCounter = maxHeat;
+        overHeated = true;
+        UIController.instance.overheatedMessage.gameObject.SetActive(true);
     }
 
     private void HandleOverheating()
@@ -270,7 +315,6 @@ public class PlayerController : MonoBehaviour
         }
 
         AlignTempSlider();
-
     }
 
     private void AlignTempSlider()
@@ -278,6 +322,7 @@ public class PlayerController : MonoBehaviour
         UIController.instance.weaponTempSlider.value = heatCounter;
 
     }
+    #endregion
     #endregion
 
     #region GunSelection
