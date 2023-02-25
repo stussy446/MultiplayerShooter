@@ -239,7 +239,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    DisplayShotImpact(hit);
+                    HandleShotImpact(hit);
                 }
 
                 shotCounter = allGuns[selectedGun].timeBetweenShots;
@@ -253,11 +253,23 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
     }
 
-    private void DisplayShotImpact(RaycastHit hit)
+    [PunRPC]
+    public void DealDamage(string damager)
+    {
+        Debug.Log($"ive been hit by {damager}");
+    }
+
+    private void HandleShotImpact(RaycastHit hit)
     {
         if (hit.collider.gameObject.CompareTag("Player"))
         {
             PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+            hit.collider.gameObject.GetPhotonView().RPC
+                (
+                "DealDamage",
+                RpcTarget.All,
+                PhotonNetwork.NickName
+                );
         }
         else
         {
@@ -265,7 +277,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             Destroy(impact, impactLifetime);
         }
     }
-
+    #region HeatLogic
     private void CalculateCurrentHeat()
     {
         heatCounter -= coolRate * Time.deltaTime;
@@ -296,7 +308,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
 
         AlignTempSlider();
-
     }
 
     private void AlignTempSlider()
@@ -304,6 +315,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         UIController.instance.weaponTempSlider.value = heatCounter;
 
     }
+    #endregion
     #endregion
 
     #region GunSelection
