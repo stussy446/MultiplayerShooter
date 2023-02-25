@@ -27,9 +27,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("Shooting Configs")]
     [SerializeField] GameObject bulletImpact;
     [SerializeField] float impactLifetime = 10f;
-    //[SerializeField] float timeBetweenShots = 0.1f;
     [SerializeField] float maxHeat = 10f;
-    //[SerializeField] float heatPerShot = 1f;
     [SerializeField] float coolRate = 4f;
     [SerializeField] float overheatCoolRate = 5f;
     [SerializeField] float muzzleDisplayTime;
@@ -38,6 +36,10 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("Available Guns")]
     [SerializeField] Gun[] allGuns;
     private int selectedGun;
+
+    [Header("VFX")]
+    [SerializeField] GameObject playerHitImpact;
+
 
     private float heatCounter;
     private bool overHeated;
@@ -237,26 +239,43 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
-                    Destroy(impact, impactLifetime);
+                    DisplayShotImpact(hit);
                 }
 
                 shotCounter = allGuns[selectedGun].timeBetweenShots;
                 heatCounter += allGuns[selectedGun].heatPerShot;
+
                 if (heatCounter >= maxHeat)
                 {
-                    heatCounter = maxHeat;
-                    overHeated = true;
-                    UIController.instance.overheatedMessage.gameObject.SetActive(true);
-
+                    SetToMaxHeat();
                 }
             }
+        }
+    }
+
+    private void DisplayShotImpact(RaycastHit hit)
+    {
+        if (hit.collider.gameObject.CompareTag("Player"))
+        {
+            PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+        }
+        else
+        {
+            GameObject impact = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+            Destroy(impact, impactLifetime);
         }
     }
 
     private void CalculateCurrentHeat()
     {
         heatCounter -= coolRate * Time.deltaTime;
+    }
+
+    private void SetToMaxHeat()
+    {
+        heatCounter = maxHeat;
+        overHeated = true;
+        UIController.instance.overheatedMessage.gameObject.SetActive(true);
     }
 
     private void HandleOverheating()
