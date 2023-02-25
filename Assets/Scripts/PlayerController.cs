@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks
 {
     [Header("Movement Configs")]
     [SerializeField] float moveSpeed;
@@ -61,8 +62,6 @@ public class PlayerController : MonoBehaviour
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
         SwitchGun();
-
-        SpawnPlayer();
     }
 
     private void SpawnPlayer()
@@ -74,6 +73,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!photonView.IsMine)
+        {
+            return;
+        }
+
         HandleRotation();
         HandleMovement();
         ToggleCursor();
@@ -106,7 +110,10 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        SetCamera();
+        if (photonView.IsMine)
+        {
+            SetCamera();
+        }
     }
 
     #region Movement
