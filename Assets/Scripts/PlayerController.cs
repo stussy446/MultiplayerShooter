@@ -256,7 +256,14 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [PunRPC]
     public void DealDamage(string damager)
     {
-        Debug.Log($"ive been hit by {damager}");
+        TakeDamage(damager);
+    }
+
+    public void TakeDamage(string damager)
+    {
+        Debug.Log($"{photonView.Owner.NickName} has been hit by {damager}");
+        gameObject.SetActive(false);
+
     }
 
     private void HandleShotImpact(RaycastHit hit)
