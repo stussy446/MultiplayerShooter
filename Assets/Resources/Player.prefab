@@ -84,6 +84,7 @@ MonoBehaviour:
   timeBetweenShots: 0.35
   heatPerShot: 5
   muzzleFlash: {fileID: 1841259189666798331}
+  shotDamage: 35
 --- !u!1 &1534635295420706073
 GameObject:
   m_ObjectHideFlags: 0
@@ -314,6 +315,7 @@ MonoBehaviour:
   groundLayers:
     serializedVersion: 2
     m_Bits: 64
+  maxHealth: 100
   bulletImpact: {fileID: 6550444145107247, guid: 7b26a02bbfdf66646ab0a4382c690de6, type: 3}
   impactLifetime: 10
   maxHeat: 10
@@ -432,6 +434,7 @@ MonoBehaviour:
   timeBetweenShots: 0.1
   heatPerShot: 1
   muzzleFlash: {fileID: 1841259189048581603}
+  shotDamage: 15
 --- !u!1 &1534635296580869784
 GameObject:
   m_ObjectHideFlags: 0
@@ -513,6 +516,7 @@ MonoBehaviour:
   timeBetweenShots: 0.1
   heatPerShot: 2
   muzzleFlash: {fileID: 1841259189896616876}
+  shotDamage: 25
 --- !u!1001 &1534635295625865130
 PrefabInstance:
   m_ObjectHideFlags: 0

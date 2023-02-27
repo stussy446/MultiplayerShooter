@@ -31,6 +31,7 @@ public class PlayerSpawner : MonoBehaviour
     {
         Transform spawnPoint = SpawnManager.instance.GetSpawnPoint();
         player = PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
+        UIController.instance.healthSlider.value = player.GetComponent<PlayerController>().maxHealth;
     }
 
     public void Die(string damager)
