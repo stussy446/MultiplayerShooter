@@ -24,6 +24,10 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [SerializeField] Transform groundCheckPoint;
     [SerializeField] LayerMask groundLayers;
 
+    [Header("Health Configs")]
+    public int maxHealth = 100;
+    private int currentHealth;
+
     [Header("Shooting Configs")]
     [SerializeField] GameObject bulletImpact;
     [SerializeField] float impactLifetime = 10f;
@@ -63,7 +67,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
+        UIController.instance.healthSlider.value = maxHealth;
+        UIController.instance.healthSlider.maxValue = maxHealth;
+        currentHealth = maxHealth;
+
         SwitchGun();
+
+        
     }
 
     private void SpawnPlayer()
@@ -71,6 +81,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         Transform newSpawnPoint = SpawnManager.instance.GetSpawnPoint();
         transform.position = newSpawnPoint.position;
         transform.rotation = newSpawnPoint.rotation;
+        currentHealth = maxHealth;
     }
 
     private void Update()
@@ -254,16 +265,23 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    public void DealDamage(string damager)
+    public void DealDamage(string damager, int damageAmount)
     {
-        TakeDamage(damager);
+        TakeDamage(damager, damageAmount);
     }
 
-    public void TakeDamage(string damager)
+    public void TakeDamage(string damager, int damageAmount)
     {
-        Debug.Log($"{photonView.Owner.NickName} has been hit by {damager}");
-        gameObject.SetActive(false);
-
+        if (photonView.IsMine)
+        {
+            currentHealth -= damageAmount;
+            UIController.instance.healthSlider.value = currentHealth;
+            if (currentHealth <= 0)
+            {
+                currentHealth = 0;
+                PlayerSpawner.Instance.Die(damager);
+            }
+        }
     }
 
     private void HandleShotImpact(RaycastHit hit)
@@ -275,8 +293,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 (
                 "DealDamage",
                 RpcTarget.All,
-                PhotonNetwork.NickName
-                );
+                PhotonNetwork.NickName,
+                allGuns[selectedGun].shotDamage
+                ); 
         }
         else
         {
