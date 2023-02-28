@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("Movement Configs")]
     [SerializeField] float moveSpeed;
     [SerializeField] float runSpeed;
+    [SerializeField] GameObject playerModel;
 
     [Header("Look Rotation Configs")]
     [SerializeField] Transform viewPoint;
@@ -44,6 +45,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("VFX")]
     [SerializeField] GameObject playerHitImpact;
 
+    [Header("Animation Configs")]
+    [SerializeField] Animator anim;
+    [SerializeField] Transform modelGunPoint;
+    [SerializeField] Transform gunHolder;
+
 
     private float heatCounter;
     private bool overHeated;
@@ -67,13 +73,22 @@ public class PlayerController : MonoBehaviourPunCallbacks
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
-        UIController.instance.healthSlider.value = maxHealth;
-        UIController.instance.healthSlider.maxValue = maxHealth;
         currentHealth = maxHealth;
 
-        SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
-        
+        if (photonView.IsMine)
+        {
+            playerModel.SetActive(false);
+            UIController.instance.healthSlider.value = maxHealth;
+            UIController.instance.healthSlider.maxValue = maxHealth;
+        }
+        else
+        {
+            gunHolder.parent = modelGunPoint;
+            gunHolder.transform.localPosition = Vector3.zero;
+            gunHolder.transform.localRotation = Quaternion.identity;
+        }
     }
 
     private void SpawnPlayer()
@@ -118,6 +133,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         ResetIfHeatIsNegative();
         SelectGun();
+
+        UpdateAnimations();
 
     }
 
@@ -232,6 +249,12 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         cam.transform.position = viewPoint.position;
         cam.transform.rotation = viewPoint.rotation;
+    }
+
+    private void UpdateAnimations()
+    {
+        anim.SetBool("grounded", isGrounded);
+        anim.SetFloat("speed", moveDirection.magnitude);
     }
 
     private void Shoot()
@@ -356,10 +379,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
             ChoosePreviousGun();
         }
 
-        SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
+
     }
 
-   private void ChooseNextGun()
+    private void ChooseNextGun()
     {
         selectedGun++;
 
@@ -386,6 +410,18 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
 
         allGuns[selectedGun].gameObject.SetActive(true);
+
+
+    }
+
+    [PunRPC]
+    public void SetGun(int gunToSwitchTo)
+    {
+        if (gunToSwitchTo < allGuns.Length)
+        {
+            selectedGun = gunToSwitchTo;
+            SwitchGun();
+        }
     }
     #endregion
 }
