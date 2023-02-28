@@ -72,8 +72,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
         currentHealth = maxHealth;
 
         SwitchGun();
-
-        
     }
 
     private void SpawnPlayer()
