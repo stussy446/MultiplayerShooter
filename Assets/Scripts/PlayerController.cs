@@ -44,6 +44,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("VFX")]
     [SerializeField] GameObject playerHitImpact;
 
+    [Header("Animation Configs")]
+    [SerializeField] Animator anim;
+
 
     private float heatCounter;
     private bool overHeated;
@@ -116,6 +119,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         ResetIfHeatIsNegative();
         SelectGun();
+
+        anim.SetBool("grounded", isGrounded);
+        anim.SetFloat("speed", moveDirection.magnitude);
 
     }
 

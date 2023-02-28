@@ -328,6 +328,7 @@ MonoBehaviour:
   - {fileID: 1534635296241565646}
   - {fileID: 1534635295127680307}
   playerHitImpact: {fileID: 6550444145107247, guid: 834509e8983c88043ad491a443919623, type: 3}
+  anim: {fileID: 4947664784106904995}
 --- !u!143 &1534635295847657495
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1022,6 +1023,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 38074321d88bbe3438955d413494dac3, type: 3}
+--- !u!95 &4947664784106904995 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1046021142975120984, guid: 38074321d88bbe3438955d413494dac3, type: 3}
+  m_PrefabInstance: {fileID: 5345091368558681083}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4947664784150902682 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1046021142964628577, guid: 38074321d88bbe3438955d413494dac3, type: 3}
