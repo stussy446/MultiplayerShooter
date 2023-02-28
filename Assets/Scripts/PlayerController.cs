@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [Header("Movement Configs")]
     [SerializeField] float moveSpeed;
     [SerializeField] float runSpeed;
+    [SerializeField] GameObject playerModel;
 
     [Header("Look Rotation Configs")]
     [SerializeField] Transform viewPoint;
@@ -46,6 +47,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     [Header("Animation Configs")]
     [SerializeField] Animator anim;
+    [SerializeField] Transform modelGunPoint;
+    [SerializeField] Transform gunHolder;
 
 
     private float heatCounter;
@@ -70,11 +73,22 @@ public class PlayerController : MonoBehaviourPunCallbacks
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
-        UIController.instance.healthSlider.value = maxHealth;
-        UIController.instance.healthSlider.maxValue = maxHealth;
         currentHealth = maxHealth;
 
         SwitchGun();
+
+        if (photonView.IsMine)
+        {
+            playerModel.SetActive(false);
+            UIController.instance.healthSlider.value = maxHealth;
+            UIController.instance.healthSlider.maxValue = maxHealth;
+        }
+        else
+        {
+            gunHolder.parent = modelGunPoint;
+            gunHolder.transform.localPosition = Vector3.zero;
+            gunHolder.transform.localRotation = Quaternion.identity;
+        }
     }
 
     private void SpawnPlayer()
