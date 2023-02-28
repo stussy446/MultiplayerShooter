@@ -120,8 +120,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         ResetIfHeatIsNegative();
         SelectGun();
 
-        anim.SetBool("grounded", isGrounded);
-        anim.SetFloat("speed", moveDirection.magnitude);
+        UpdateAnimations();
 
     }
 
@@ -236,6 +235,12 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         cam.transform.position = viewPoint.position;
         cam.transform.rotation = viewPoint.rotation;
+    }
+
+    private void UpdateAnimations()
+    {
+        anim.SetBool("grounded", isGrounded);
+        anim.SetFloat("speed", moveDirection.magnitude);
     }
 
     private void Shoot()
