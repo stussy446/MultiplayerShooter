@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
         currentHealth = maxHealth;
 
-        SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
         if (photonView.IsMine)
         {
@@ -379,10 +379,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
             ChoosePreviousGun();
         }
 
-        SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
+
     }
 
-   private void ChooseNextGun()
+    private void ChooseNextGun()
     {
         selectedGun++;
 
@@ -409,6 +410,18 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
 
         allGuns[selectedGun].gameObject.SetActive(true);
+
+
+    }
+
+    [PunRPC]
+    public void SetGun(int gunToSwitchTo)
+    {
+        if (gunToSwitchTo < allGuns.Length)
+        {
+            selectedGun = gunToSwitchTo;
+            SwitchGun();
+        }
     }
     #endregion
 }
