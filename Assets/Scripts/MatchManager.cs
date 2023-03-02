@@ -166,18 +166,34 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     case 0:
                         allPlayers[i].kills += amount;
-                        Debug.Log($"Player {allPlayers[i].name} kills: {allPlayers[i].kills}");
                         break;
                     case 1:
                         allPlayers[i].deaths += amount;
-                        Debug.Log($"Player {allPlayers[i].name} deaths: {allPlayers[i].deaths}");
                         break;
                     default:
                         break;
                 }
 
+                if (i == index)
+                {
+                    UpdateStatsDisplay();
+                }
                 break;
             }
+        }
+    }
+
+    public void UpdateStatsDisplay()
+    {
+        if (allPlayers.Count > index)
+        {
+            UIController.instance.killsText.text = $"kills: {allPlayers[index].kills}";
+            UIController.instance.deathsText.text = $"deaths: {allPlayers[index].deaths}";
+        }
+        else
+        {
+            UIController.instance.killsText.text = $"kills: 0";
+            UIController.instance.deathsText.text = $"deaths: 0";
         }
     }
 }
