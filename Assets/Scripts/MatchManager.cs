@@ -5,6 +5,7 @@ using Photon.Pun;
 using UnityEngine.SceneManagement;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 
 public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
@@ -138,14 +139,46 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
-    public void UpdateStatSend()
+    public void UpdateStatSend(int actorSending, int statToUpdate, int amountToChange)
     {
+        object[] package = new object[] { actorSending, statToUpdate, amountToChange };
 
+        PhotonNetwork.RaiseEvent(
+          (byte)EventCodes.UpdateStat,
+          package,
+          new RaiseEventOptions { Receivers = ReceiverGroup.All },
+          new SendOptions { Reliability = true }
+          );
     }
 
     public void UpdateStatReceive(object[] dataReceived)
     {
 
+        int actor = (int)dataReceived[0];
+        int statType = (int)dataReceived[1];
+        int amount = (int)dataReceived[2];
+
+        for (int i = 0; i < allPlayers.Count; i++)
+        {
+            if (allPlayers[i].actor == actor)
+            {
+                switch (statType)
+                {
+                    case 0:
+                        allPlayers[i].kills += amount;
+                        Debug.Log($"Player {allPlayers[i].name} kills: {allPlayers[i].kills}");
+                        break;
+                    case 1:
+                        allPlayers[i].deaths += amount;
+                        Debug.Log($"Player {allPlayers[i].name} deaths: {allPlayers[i].deaths}");
+                        break;
+                    default:
+                        break;
+                }
+
+                break;
+            }
+        }
     }
 }
 
